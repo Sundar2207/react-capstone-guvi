@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    stages {
+        stage('Cloning to local repo') {
+            steps {
+                script {
+                    git branch: 'main',
+                    url: 
+'https://github.com/Sundar2207/react-capstone-guvi.git'
+                }
+            }
+        }
+        stage('Building image') {
+            steps {
+                script {
+                    sh 'chmod 744 build.sh'
+                    sh './build.sh'
+                }
+            }
+        }
+        stage('deploy') {
+            steps {
+                sh 'chmod 744 deploy.sh'
+                sh './deploy.sh'
+            }
+        }
+        stage('pushing to dockerhub repo:dev') {
+            steps {
+                withCredentials([usernamePassword(credential
+sId: 'docker-jenkins', passwordVariable: 'DOCKER_PASSWORD', 
+usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin docker.io"
+                        sh 'docker tag react-capstone-t $DOCKER_USERNAME/dev:react-capstone-d'
+                        sh 'docker push sundar22/dev:react-capstone-d
+                }
+            }   
+        }
+    }
+}
+
